@@ -1,0 +1,178 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  validate:
+    name: Validate PR
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      # ============================================================
+      # 1. Checkout
+      # ============================================================
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better diffs
+
+      # ============================================================
+      # 2. Setup Java
+      # ============================================================
+      - name: ☕ Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      # ============================================================
+      # 3. Setup PostgreSQL
+      # ============================================================
+      - name: 🐘 Setup PostgreSQL
+        uses: ikalnytskyi/action-setup-postgres@v6
+        with:
+          version: '15'
+          database: connecthealth_test
+          username: postgres
+          password: postgres
+        id: postgres
+
+      # ============================================================
+      # 4. Code Format Check
+      # ============================================================
+      - name: 🎨 Check code format
+        run: |
+          if grep -q "spotless" build.gradle; then
+            ./gradlew spotlessCheck
+          else
+            echo "Spotless not configured - skipping format check"
+          fi
+
+      # ============================================================
+      # 5. Build
+      # ============================================================
+      - name: 🔨 Build project
+        run: ./gradlew build -x test --no-daemon
+
+      # ============================================================
+      # 6. Run Tests
+      # ============================================================
+      - name: 🧪 Run tests
+        run: ./gradlew test --no-daemon
+        env:
+          SPRING_DATASOURCE_URL: ${{ steps.postgres.outputs.connection-uri }}
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+
+      # ============================================================
+      # 7. Generate Test Report
+      # ============================================================
+      - name: 📊 Publish test report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Results
+          path: '**/build/test-results/test/*.xml'
+          reporter: java-junit
+          fail-on-error: true
+
+      # ============================================================
+      # 8. Test Coverage
+      # ============================================================
+      - name: 📈 Generate coverage report
+        if: always()
+        run: ./gradlew jacocoTestReport --no-daemon || echo "Coverage plugin not configured"
+
+      - name: 📤 Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        continue-on-error: true
+        with:
+          files: '**/build/reports/jacoco/test/jacocoTestReport.xml'
+          flags: unittests
+          name: codecov-umbrella
+
+      # ============================================================
+      # 9. API Registry Sync Check
+      # ============================================================
+      - name: 🔗 Check API Registry sync
+        run: |
+          echo "Checking if controller changes require API_REGISTRY.md update..."
+
+          # Get list of modified controllers
+          MODIFIED_CONTROLLERS=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E "Controller\.java$" || true)
+
+          if [ -n "$MODIFIED_CONTROLLERS" ]; then
+            echo "Modified controllers detected:"
+            echo "$MODIFIED_CONTROLLERS"
+
+            # Check if API_REGISTRY.md was modified
+            if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "API_REGISTRY.md"; then
+              echo "✅ API_REGISTRY.md was updated"
+            else
+              echo "⚠️ WARNING: Controller files modified but API_REGISTRY.md not updated"
+              echo "If you added/changed endpoints, please update .claude/docs/API_REGISTRY.md"
+              exit 1
+            fi
+          else
+            echo "✅ No controller changes detected"
+          fi
+
+      # ============================================================
+      # 10. Code Quality Checks
+      # ============================================================
+      - name: 🔍 Check for System.out.println
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep "\.java$" | xargs grep -n "System\.out\.println" 2>/dev/null; then
+            echo "❌ Found System.out.println - use SLF4J logger instead"
+            exit 1
+          else
+            echo "✅ No System.out.println found"
+          fi
+
+      - name: 🔍 Check for @Transactional on repositories
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep "Repository\.java$" | xargs grep -n "@Transactional" 2>/dev/null; then
+            echo "❌ Found @Transactional on repositories - should be on Use Cases only"
+            exit 1
+          else
+            echo "✅ No @Transactional on repositories"
+          fi
+
+      # ============================================================
+      # 11. SonarQube Analysis (Optional)
+      # ============================================================
+      - name: 📊 SonarQube analysis
+        if: ${{ env.SONAR_TOKEN != '' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if grep -q "sonarqube\|sonar" build.gradle; then
+            ./gradlew sonarqube \
+              -Dsonar.projectKey=connecthealth-fit-api \
+              -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+              -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+              --no-daemon
+          else
+            echo "SonarQube plugin not configured - skipping"
+          fi
+
+      # ============================================================
+      # 12. Summary
+      # ============================================================
+      - name: ✅ Validation complete
+        if: success()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ All PR validations passed successfully!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

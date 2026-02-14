@@ -8,13 +8,14 @@ This is the **backend API** for ConnectHealth platform. For full project documen
 
 ## Docs (multi-repo)
 
-Before working, read these docs from `.claude/common/`:
+Before working, read these docs:
 
-1. `docs/DOMAIN_SPEC.md` - Entities, enums, business rules
-2. `docs/API_REGISTRY.md` - API endpoints to implement
-3. `skills/fit-api/SKILL.md` - Java/Spring patterns & conventions
-4. `fit-api/ARCHITECTURE.md` - Module structure & layers (if exists)
-5. `fit-api/DATABASE.md` - PostgreSQL schema & migrations (if exists)
+1. `.claude/common/docs/DOMAIN_SPEC.md` - Entities, enums, business rules
+2. `.claude/common/docs/API_REGISTRY.md` - API endpoints to implement
+3. `.claude/common/docs/CODING_GUIDELINES.md` - Coding standards
+4. `.claude/skills/fit-api/SKILL.md` - Java/Spring patterns & conventions
+5. `ARCHITECTURE.md` - Module structure & layers (if exists in root)
+6. `DATABASE.md` - PostgreSQL schema & migrations (if exists in root)
 
 ## Architecture
 

@@ -1,3 +1,0 @@
-[submodule ".claude/common"]
-	path = .claude/common
-	url = https://github.com/DanilloMello/fit-common.git

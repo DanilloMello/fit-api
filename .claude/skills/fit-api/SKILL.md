@@ -5,7 +5,7 @@ description: Backend skill for fit-api. Java/Spring patterns and conventions.
 
 # fit-api Skill
 
-> **Prereq**: Read `docs/DOMAIN_SPEC.md` first
+> **Prereq**: Use `fit-api-docs` MCP to read `DOMAIN_SPEC.md` first
 
 ---
 
@@ -86,7 +86,7 @@ public class ClientController {
 ## 4. Rules
 
 - `@Transactional` on Use Case only
-- **Update `docs/API_REGISTRY.md` when adding endpoints**
+- **Update `API_REGISTRY.md` in fit-common repo when adding endpoints**
 
 ---
 

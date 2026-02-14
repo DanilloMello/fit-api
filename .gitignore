@@ -54,5 +54,7 @@ Desktop.ini
 # Application
 application-local.yml
 
-# Claude - symlinked docs
+# Claude - docs managed via git submodule at .claude/common/
+# (submodules are tracked in .gitmodules, not .gitignore)
 .claude/docs
+.claude/docs.backup

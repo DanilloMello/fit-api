@@ -4,17 +4,17 @@
 
 ## Context
 
-This is the **backend API** for ConnectHealth platform. For full project documentation, see `../fit-common/`.
+This is the **backend API** for ConnectHealth platform. For full project documentation, see `.claude/common/`.
 
 ## Docs (multi-repo)
 
-Before working, read these docs from `../fit-common/`:
+Before working, read these docs from `.claude/common/`:
 
 1. `docs/DOMAIN_SPEC.md` - Entities, enums, business rules
 2. `docs/API_REGISTRY.md` - API endpoints to implement
 3. `skills/fit-api/SKILL.md` - Java/Spring patterns & conventions
-4. `fit-api/ARCHITECTURE.md` - Module structure & layers
-5. `fit-api/DATABASE.md` - PostgreSQL schema & migrations
+4. `fit-api/ARCHITECTURE.md` - Module structure & layers (if exists)
+5. `fit-api/DATABASE.md` - PostgreSQL schema & migrations (if exists)
 
 ## Architecture
 
@@ -44,12 +44,13 @@ fit-api/
 
 - `@Transactional` on Use Case only, never on repository
 - Events published within transaction
-- **Always update `../fit-common/docs/API_REGISTRY.md` when adding endpoints**
+- **Always update `.claude/common/docs/API_REGISTRY.md` when adding endpoints**
+- **Commit changes to the submodule and push to fit-common repository**
 - Package: `com.connecthealth.{module}`
 
 ## Sprint Plan
 
-See `../fit-common/docs/SPRINT_PLAN.md` for roadmap.
+See `.claude/common/docs/SPRINT_PLAN.md` for roadmap.
 
 ## Commands
 

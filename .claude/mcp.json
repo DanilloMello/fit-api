@@ -1,20 +1,20 @@
 {
   "mcpServers": {
     "fit-api-docs": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "../fit-common/docs"]
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Danil\\projetos\\fit-common\\docs"]
     },
     "fit-api-skills": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./.claude/skills"]
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Danil\\projetos\\fit-api\\.claude\\skills"]
     },
     "fit-api-scripts": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "../fit-common/scripts"]
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Danil\\projetos\\fit-common\\scripts"]
     },
     "fit-api-hooks": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "../fit-common/templates/hooks"]
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Danil\\projetos\\fit-common\\templates\\hooks"]
     }
   }
 }

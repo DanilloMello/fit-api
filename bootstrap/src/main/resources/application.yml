@@ -26,3 +26,9 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-secret-key-at-least-256-bits-long-for-hs256-algorithm}
+    access-token-expiry: 900
+    refresh-token-expiry: 604800

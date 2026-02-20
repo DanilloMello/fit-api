@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(npx eas:*)",
+      "Bash(npx expo:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e:*)",
+      "mcp__fit-api-skills__directory_tree",
+      "Bash(node:*)",
+      "mcp__fit-api-hooks__read_text_file",
+      "mcp__fit-api-docs__read_text_file",
+      "mcp__fit-api-hooks__list_allowed_directories",
+      "mcp__fit-api-hooks__list_directory",
+      "Bash(bash /c/Users/Danil/projetos/fit-common/scripts/install-hooks.sh)",
+      "Bash(git -C /c/Users/Danil/projetos/fit-api config core.hooksPath .githooks)",
+      "Bash(git -C /c/Users/Danil/projetos/fit-mobile config core.hooksPath .githooks)",
+      "Bash(git -C /c/Users/Danil/projetos/fit-api config core.hooksPath)",
+      "Bash(git -C /c/Users/Danil/projetos/fit-mobile config core.hooksPath)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Danil\\projetos\\fit-mobile\\.git\\hooks",
+      "C:\\Users\\Danil\\projetos\\fit-api\\.git\\hooks"
+    ]
+  }
+}

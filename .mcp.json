@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "fit-api-docs": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Danil\\projetos\\fit-common\\docs"]
+    },
+    "fit-api-skills": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Danil\\projetos\\fit-api\\.claude\\skills"]
+    },
+    "fit-api-hooks": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\Danil\\projetos\\fit-api\\.githooks"]
+    }
+  }
+}

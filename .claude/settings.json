@@ -20,7 +20,10 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git -C /c/Users/Danil/projetos/fit-api push)",
+      "Bash(git -C /c/Users/Danil/projetos/fit-mobile push)",
+      "Bash(git -C /c/Users/Danil/projetos/fit-common push)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Danil\\projetos\\fit-mobile\\.git\\hooks",

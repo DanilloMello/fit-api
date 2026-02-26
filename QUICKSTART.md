@@ -25,14 +25,16 @@ projetos/
 └── fit-mobile/     # (optional, for frontend work)
 ```
 
-## Install Pre-Push Hook
+## Configure Pre-Push Hook
+
+The hook ships with the repo in `.githooks/pre-push`. Run once after cloning:
 
 ```bash
-cd fit-common
-./scripts/install-hooks.sh
+cd fit-api
+git config core.hooksPath .githooks
 ```
 
-This installs the **pre-push hook** that validates code quality before pushing (tests, build, format, guidelines).
+This activates the **pre-push hook** that validates code quality before pushing (Spotless format → build → tests → API Registry sync → guidelines → SonarLint).
 
 ## Start Development
 
@@ -56,8 +58,7 @@ The `.claude/mcp.json` is already configured. When you open this project in Clau
 Available MCP servers:
 - `fit-api-docs` — shared docs (DOMAIN_SPEC, API_REGISTRY, etc.)
 - `fit-api-skills` — Java/Spring patterns
-- `fit-api-scripts` — automation scripts
-- `fit-api-hooks` — git hook templates
+- `fit-api-hooks` — this app's git hook templates
 
 ## Working with Shared Documentation
 
@@ -87,6 +88,12 @@ git push                    # Pre-push hook validates automatically
 ### Pre-push hook fails
 Fix the errors shown by the hook, then push again.
 
+### Pre-push hook not running
+Ensure the hook path is configured:
+```bash
+git config core.hooksPath .githooks
+```
+
 ### MCP not connecting
 Verify fit-common is cloned as a sibling directory:
 ```bash
@@ -108,7 +115,7 @@ docker compose up -d
 
 ## Next Steps
 
-- Read `CLAUDE.md` for project overview
+- Read `CLAUDE.md` for project overview and git workflow
 - Use `fit-api-docs` MCP to read `DOMAIN_SPEC.md` for the domain model
 - Use `fit-api-docs` MCP to read `API_REGISTRY.md` for API endpoints
 - Read `.claude/skills/fit-api/SKILL.md` for Java/Spring patterns

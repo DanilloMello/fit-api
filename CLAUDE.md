@@ -20,7 +20,7 @@ Shared documentation lives in the **fit-common** sibling repo and is accessed vi
 ## Skills
 
 **If you need patterns and conventions:**
-- `.claude/skills/fit-api/SKILL.md` - Java/Spring patterns & conventions
+- `.claude/skills/fit-api-overview/SKILL.md` - Java/Spring patterns & conventions
 
 ## Hook
 
@@ -39,29 +39,31 @@ Checks: Spotless format → Gradle build → tests → API Registry sync → gui
 ```
 fit-api/
 ├── modules/
-│   ├── shared-kernel/       # Base classes (Entity, AggregateRoot, ValueObject)
+│   ├── shared-kernel/       # Shared utilities (ApiResponse)
 │   ├── identity/            # Auth, user profile
 │   ├── client/              # Client management, measurements
 │   └── training/            # Plans, exercises
-├── bootstrap/               # Spring Boot app entry point
+├── bootstrap/               # Spring Boot app entry point, Security config
 ├── docker-compose.yml       # PostgreSQL + app
 └── src/main/resources/
     └── db/migration/        # Flyway migrations
 ```
 
-## Layers (per module)
+## Layers (per module) — Spring Boot MVC
 
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
-| domain | `domain/entity/`, `domain/valueobject/`, `domain/repository/` | Entities, VOs, Repository ports |
-| application | `application/usecase/`, `application/dto/` | Use cases, DTOs |
-| infrastructure | `infrastructure/persistence/` | JPA entities, Repository impl |
-| presentation | `presentation/` | REST Controllers |
+| model | `model/` | JPA entities (`@Entity`) |
+| repository | `repository/` | Spring Data JPA repositories |
+| service | `service/` | Business logic (`@Service @Transactional`) |
+| controller | `controller/` | REST controllers + `GlobalExceptionHandler` |
+| dto | `dto/` | Request/response DTOs |
+| exception | `exception/` | Domain exceptions |
+| security | `security/` | JWT service and properties |
 
 ## Rules
 
-- `@Transactional` on Use Case only, never on repository
-- Events published within transaction
+- `@Transactional` on Service only
 - **Always update `API_REGISTRY.md` in fit-common repo when adding endpoints**
 - Package: `com.connecthealth.{module}`
 
@@ -107,7 +109,7 @@ On a fresh clone, run once: `git config core.hooksPath .githooks`
 **After implementing any feature or change**, update `.claude/skills/fit-api-overview/SKILL.md` to reflect what changed. Do this in the same session, before finishing. Update if any of the following changed:
 - Module or package structure
 - Dependencies or versions
-- Patterns (use case, DTO, repository, controller convention, etc.)
+- Patterns (service, DTO, repository, controller convention, etc.)
 - Gradle commands or build config
 
 ## Commands

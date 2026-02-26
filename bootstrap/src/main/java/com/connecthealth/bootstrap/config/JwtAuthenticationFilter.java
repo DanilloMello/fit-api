@@ -1,8 +1,7 @@
 package com.connecthealth.bootstrap.config;
 
-import com.connecthealth.identity.domain.exception.InvalidTokenException;
-import com.connecthealth.identity.domain.valueobject.UserId;
-import com.connecthealth.identity.infrastructure.security.JwtService;
+import com.connecthealth.identity.exception.InvalidTokenException;
+import com.connecthealth.identity.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             jwtService.validateAccessToken(token);
-            UserId userId = jwtService.extractUserId(token);
+            UUID userId = jwtService.extractUserId(token);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(userId, null, List.of());

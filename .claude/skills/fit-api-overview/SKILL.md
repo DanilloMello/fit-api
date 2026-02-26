@@ -13,15 +13,14 @@ description: Backend skill for fit-api. Java/Spring patterns and conventions.
 
 | Creating | Path |
 |----------|------|
-| Entity | `modules/{m}/domain/entity/{Entity}.java` |
-| Value Object | `modules/{m}/domain/valueobject/{Name}.java` |
-| Repository Port | `modules/{m}/domain/repository/{Entity}Repository.java` |
-| Use Case | `modules/{m}/application/usecase/{Action}{Entity}UseCase.java` |
-| DTO | `modules/{m}/application/dto/{Name}.java` |
-| JPA Entity | `modules/{m}/infrastructure/persistence/{Entity}JpaEntity.java` |
-| Repository Impl | `modules/{m}/infrastructure/persistence/{Entity}RepositoryImpl.java` |
-| Controller | `modules/{m}/presentation/{Entity}Controller.java` |
-| Migration | `src/main/resources/db/migration/V{n}__{m}_{action}.sql` |
+| Model (JPA Entity) | `modules/{m}/src/main/java/com/connecthealth/{m}/model/{Entity}.java` |
+| Repository | `modules/{m}/src/main/java/com/connecthealth/{m}/repository/{Entity}Repository.java` |
+| Service | `modules/{m}/src/main/java/com/connecthealth/{m}/service/{Entity}Service.java` |
+| Controller | `modules/{m}/src/main/java/com/connecthealth/{m}/controller/{Entity}Controller.java` |
+| Request DTO | `modules/{m}/src/main/java/com/connecthealth/{m}/dto/request/{Action}Request.java` |
+| Response DTO | `modules/{m}/src/main/java/com/connecthealth/{m}/dto/{Name}Response.java` |
+| Exception | `modules/{m}/src/main/java/com/connecthealth/{m}/exception/{Name}Exception.java` |
+| Migration | `bootstrap/src/main/resources/db/migration/V{n}__{m}_{action}.sql` |
 
 ---
 
@@ -37,32 +36,49 @@ description: Backend skill for fit-api. Java/Spring patterns and conventions.
 
 ## 3. Patterns
 
-### Entity
+### Model (JPA Entity)
 ```java
-public class Client extends AggregateRoot<ClientId> {
-    private Client() {}
-    public static Client create(UserId ownerId, String name) {
-        Client c = new Client();
-        c.id = ClientId.generate();
-        c.ownerId = ownerId;
-        c.name = name;
-        c.registerEvent(new ClientCreatedEvent(c.id));
-        return c;
+@Entity
+@Table(name = "clients")
+public class Client {
+    @Id
+    private UUID id;
+
+    @Column(nullable = false)
+    private String name;
+
+    protected Client() {}
+
+    public Client(UUID id, String name) {
+        this.id = id;
+        this.name = name;
     }
+
+    // getters only
 }
 ```
 
-### Use Case
+### Repository
+```java
+public interface ClientRepository extends JpaRepository<Client, UUID> {
+    List<Client> findByOwnerId(UUID ownerId);
+}
+```
+
+### Service
 ```java
 @Service
 @Transactional
-public class CreateClientUseCase {
-    public ClientResponse execute(CreateClientCommand cmd) {
-        Client c = Client.create(cmd.ownerId(), cmd.name());
-        clientRepository.save(c);
-        eventPublisher.publishAll(c.getDomainEvents());
-        return ClientResponse.from(c);
+public class ClientService {
+
+    public ClientResponse create(CreateClientRequest request) {
+        Client client = new Client(UUID.randomUUID(), request.name());
+        clientRepository.save(client);
+        return new ClientResponse(client.getId().toString(), client.getName());
     }
+
+    @Transactional(readOnly = true)
+    public ClientResponse findById(UUID id) { ... }
 }
 ```
 
@@ -71,12 +87,23 @@ public class CreateClientUseCase {
 @RestController
 @RequestMapping("/api/v1/clients")
 public class ClientController {
+
     @PostMapping
-    public ResponseEntity<ApiResponse<ClientResponse>> create(
-            @Valid @RequestBody ClientCreateRequest req,
-            @AuthenticationPrincipal UserPrincipal user) {
-        var cmd = new CreateClientCommand(UserId.of(user.getId()), req.name());
-        return ResponseEntity.status(201).body(ApiResponse.success(useCase.execute(cmd)));
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<ClientResponse> create(@Valid @RequestBody CreateClientRequest request) {
+        return ApiResponse.success(clientService.create(request));
+    }
+}
+```
+
+### Exception Handler
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(SomeException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handle(SomeException ex) {
+        return new ErrorResponse(new ErrorDto("ERROR_CODE", ex.getMessage()));
     }
 }
 ```
@@ -85,21 +112,23 @@ public class ClientController {
 
 ## 4. Rules
 
-- `@Transactional` on Use Case only
+- `@Transactional` on Service methods only
+- Read-only queries use `@Transactional(readOnly = true)`
 - **Update `API_REGISTRY.md` in fit-common repo when adding endpoints**
+- Email normalization: always `.toLowerCase()` before save/query
 
 ---
 
 ## 5. Checklist: New Entity
 
-- [ ] Entity in `domain/entity/`
-- [ ] Repository port in `domain/repository/`
-- [ ] JPA entity in `infrastructure/persistence/`
-- [ ] Repository impl
-- [ ] Migration file
+- [ ] Model in `model/` with `@Entity`
+- [ ] Repository extending `JpaRepository`
+- [ ] Service with business logic
+- [ ] Migration file in `bootstrap/src/main/resources/db/migration/`
 
 ## 6. Checklist: New Endpoint
 
-- [ ] Use case
+- [ ] Request DTO in `dto/request/`
+- [ ] Service method
 - [ ] Controller method
 - [ ] **Update `docs/API_REGISTRY.md`**

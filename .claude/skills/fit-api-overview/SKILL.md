@@ -1,5 +1,5 @@
 ---
-name: fit-api-skill
+name: fit-api-overview
 description: Backend skill for fit-api. Java/Spring patterns and conventions.
 ---
 

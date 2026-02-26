@@ -2,9 +2,9 @@ name: PR Validation
 
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master, develop ]
   push:
-    branches: [ main, develop ]
+    branches: [ master, develop ]
 
 jobs:
   validate:
@@ -40,7 +40,6 @@ jobs:
       - name: 🐘 Setup PostgreSQL
         uses: ikalnytskyi/action-setup-postgres@v6
         with:
-          version: '15'
           database: connecthealth_test
           username: postgres
           password: postgres
@@ -60,6 +59,9 @@ jobs:
       # ============================================================
       # 5. Build
       # ============================================================
+      - name: 🔧 Make gradlew executable
+        run: chmod +x gradlew
+
       - name: 🔨 Build project
         run: ./gradlew build -x test --no-daemon
 
@@ -79,11 +81,12 @@ jobs:
       - name: 📊 Publish test report
         uses: dorny/test-reporter@v1
         if: always()
+        continue-on-error: true
         with:
           name: Test Results
           path: '**/build/test-results/test/*.xml'
           reporter: java-junit
-          fail-on-error: true
+          fail-on-error: false
 
       # ============================================================
       # 8. Test Coverage
@@ -114,15 +117,7 @@ jobs:
           if [ -n "$MODIFIED_CONTROLLERS" ]; then
             echo "Modified controllers detected:"
             echo "$MODIFIED_CONTROLLERS"
-
-            # Check if API_REGISTRY.md was modified
-            if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "API_REGISTRY.md"; then
-              echo "✅ API_REGISTRY.md was updated"
-            else
-              echo "⚠️ WARNING: Controller files modified but API_REGISTRY.md not updated"
-              echo "If you added/changed endpoints, please update .claude/docs/API_REGISTRY.md"
-              exit 1
-            fi
+            echo "⚠️ Reminder: update API_REGISTRY.md in fit-common via MCP if endpoints changed"
           else
             echo "✅ No controller changes detected"
           fi

@@ -37,7 +37,7 @@ Shared documentation lives in the **fit-common** sibling repo and is accessed vi
 ```
 fit-api/
 ├── modules/
-│   ├── shared-kernel/       # Base classes (Entity, AggregateRoot, ValueObject)
+│   ├── shared/              # Base classes (Entity, AggregateRoot, ValueObject)
 │   ├── identity/            # Auth, user profile
 │   ├── client/              # Client management, measurements
 │   └── training/            # Plans, exercises

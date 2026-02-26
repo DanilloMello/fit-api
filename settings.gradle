@@ -1,6 +1,6 @@
 rootProject.name = 'fit-api'
 
-include ':modules:shared-kernel'
+include ':modules:shared'
 include ':modules:identity'
 include ':modules:client'
 include ':modules:training'

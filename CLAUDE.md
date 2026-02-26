@@ -37,7 +37,7 @@ Shared documentation lives in the **fit-common** sibling repo and is accessed vi
 ```
 fit-api/
 ├── modules/
-│   ├── shared/              # Base classes (Entity, AggregateRoot, ValueObject)
+│   ├── shared/              # Shared DTOs (ApiResponse)
 │   ├── identity/            # Auth, user profile
 │   ├── client/              # Client management, measurements
 │   └── training/            # Plans, exercises
@@ -51,15 +51,19 @@ fit-api/
 
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
-| domain | `domain/entity/`, `domain/valueobject/`, `domain/repository/` | Entities, VOs, Repository ports |
-| application | `application/usecase/`, `application/dto/` | Use cases, DTOs |
-| infrastructure | `infrastructure/persistence/` | JPA entities, Repository impl |
-| presentation | `presentation/` | REST Controllers |
+| model | `model/` | JPA entities (`@Entity`) |
+| dto | `dto/` | Request/Response DTOs |
+| repository | `repository/` | Spring Data JPA repositories |
+| service | `service/` | Business logic (`@Service`, `@Transactional`) |
+| controller | `controller/` | REST Controllers (`@RestController`) |
 
 ## Rules
 
-- `@Transactional` on Use Case only, never on repository
-- Events published within transaction
+- `@Transactional` on Service only, never on Repository or Controller
+- Use `@Transactional(readOnly = true)` for query-only service methods
+- Controllers use DTOs — never expose JPA entities directly
+- No business logic in controllers — delegate to Services
+- `ApiResponse<T>` from `com.connecthealth.shared.dto` wraps all responses
 - **Always update `API_REGISTRY.md` in fit-common repo when adding endpoints**
 - Package: `com.connecthealth.{module}`
 

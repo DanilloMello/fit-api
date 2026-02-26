@@ -1,4 +1,4 @@
-package com.connecthealth.shared.application;
+package com.connecthealth.shared.dto;
 
 import java.util.Map;
 

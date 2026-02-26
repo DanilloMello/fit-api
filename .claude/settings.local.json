@@ -27,7 +27,10 @@
       "Bash(gh pr view 3 --json state,headRefName,baseRefName,statusCheckRollup)",
       "Bash(gh run list --limit 5)",
       "Bash(git add .)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push origin release/1.0.0)",
+      "Bash(gh pr merge 9 --merge)",
+      "Bash(gh pr view 9 --json state,mergedAt,url)"
     ]
   },
   "enabledMcpjsonServers": [

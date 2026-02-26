@@ -40,7 +40,6 @@ jobs:
       - name: 🐘 Setup PostgreSQL
         uses: ikalnytskyi/action-setup-postgres@v6
         with:
-          version: '15'
           database: connecthealth_test
           username: postgres
           password: postgres

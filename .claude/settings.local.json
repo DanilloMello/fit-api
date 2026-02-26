@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :modules:identity:compileJava:*)",
+      "Bash(./gradlew :modules:shared:compileJava:*)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Java/jdk-21\" ./gradlew:*)",
+      "Bash(grep:*)",
+      "Bash(cmd.exe /c \"gh --version\")",
+      "Bash(git add .github/workflows/pr-validation.yml)",
+      "Bash(git commit -m \"ci: add chmod +x for gradlew in CI workflow\")",
+      "Bash(git push)",
+      "Bash(git add .claude/settings.json)",
+      "Bash(git commit -m \"chore\\(config\\): update allowed permissions in settings\")",
+      "Bash(git add gradle.properties .github/workflows/pr-validation.yml)",
+      "Bash(git commit -m \"ci: remove local JDK path from gradle.properties, relax test reporter\")",
+      "Bash(git checkout develop)",
+      "Bash(git branch -d feat/sprint-1-identity)",
+      "mcp__fit-api-docs__read_text_file",
+      "mcp__fit-api-docs__list_directory",
+      "mcp__fit-api-docs__list_allowed_directories",
+      "Bash(git commit -m \"ci: make API Registry check a warning instead of hard failure\")",
+      "Bash(git hook run pre-push)",
+      "Bash(.git/hooks/pre-push)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(./gradlew clean)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "fit-api-docs",
+    "fit-api-skills",
+    "fit-api-scripts",
+    "fit-api-hooks"
+  ]
+}

@@ -34,9 +34,6 @@
     ]
   },
   "enabledMcpjsonServers": [
-    "fit-api-docs",
-    "fit-api-skills",
-    "fit-api-scripts",
-    "fit-api-hooks"
+    "fit-api-docs"
   ]
 }

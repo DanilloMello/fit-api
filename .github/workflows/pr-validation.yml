@@ -46,7 +46,13 @@ jobs:
         id: postgres
 
       # ============================================================
-      # 4. Code Format Check
+      # 4. Grant execute permission to gradlew
+      # ============================================================
+      - name: 🔧 Grant execute permission to gradlew
+        run: chmod +x gradlew
+
+      # ============================================================
+      # 5. Code Format Check
       # ============================================================
       - name: 🎨 Check code format
         run: |

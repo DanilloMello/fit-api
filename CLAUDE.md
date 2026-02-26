@@ -20,7 +20,7 @@ Shared documentation lives in the **fit-common** sibling repo and is accessed vi
 ## Skills
 
 **If you need patterns and conventions:**
-- `.claude/skills/fit-api/SKILL.md` - Java/Spring patterns & conventions
+- `.claude/skills/fit-api-overview/SKILL.md` - Java/Spring patterns & conventions
 
 ## Scripts (via MCP)
 
@@ -65,6 +65,7 @@ fit-api/
 - No business logic in controllers — delegate to Services
 - `ApiResponse<T>` from `com.connecthealth.shared.dto` wraps all responses
 - **Always update `API_REGISTRY.md` in fit-common repo when adding endpoints**
+- **When adding or updating a dependency, use the `context7` MCP to check the latest stable version**
 - Package: `com.connecthealth.{module}`
 
 ## Commands

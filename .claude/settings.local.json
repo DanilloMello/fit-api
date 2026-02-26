@@ -22,7 +22,12 @@
       "Bash(git hook run pre-push)",
       "Bash(.git/hooks/pre-push)",
       "Bash(echo \"exit: $?\")",
-      "Bash(./gradlew clean)"
+      "Bash(./gradlew clean)",
+      "Bash(xargs ls -la)",
+      "Bash(gh pr view 3 --json state,headRefName,baseRefName,statusCheckRollup)",
+      "Bash(gh run list --limit 5)",
+      "Bash(git add .)",
+      "Bash(git commit:*)"
     ]
   },
   "enabledMcpjsonServers": [

@@ -39,7 +39,7 @@ Checks: Spotless format → Gradle build → tests → API Registry sync → gui
 ```
 fit-api/
 ├── modules/
-│   ├── shared-kernel/       # Shared utilities (ApiResponse)
+│   ├── shared/       # Shared utilities (ApiResponse)
 │   ├── identity/            # Auth, user profile
 │   ├── client/              # Client management, measurements
 │   └── training/            # Plans, exercises

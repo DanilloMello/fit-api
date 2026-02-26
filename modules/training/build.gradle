@@ -11,7 +11,7 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation project(':modules:shared-kernel')
+    implementation project(':modules:shared')
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

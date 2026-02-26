@@ -45,7 +45,7 @@ Implement the full Identity bounded context: User entity, JWT-based authenticati
 #### Subtasks
 
 - [ ] **1.1** — Create `User.java` in `modules/identity/src/main/java/com/connecthealth/identity/domain/entity/`
-  - Extend `AggregateRoot<UserId>` from `shared-kernel`
+  - Extend `AggregateRoot<UserId>` from `shared`
   - Fields: `id (UserId)`, `name (String)`, `email (Email)`, `passwordHash (String)`, `phone (String, nullable)`, `photoUrl (String, nullable)`, `createdAt (Instant)`
   - Constructor validates: name not blank, email not null, passwordHash not blank
   - No JPA annotations — this is pure domain

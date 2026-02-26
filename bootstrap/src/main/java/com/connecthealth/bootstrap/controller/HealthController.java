@@ -1,4 +1,4 @@
-package com.connecthealth.bootstrap.presentation;
+package com.connecthealth.bootstrap.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

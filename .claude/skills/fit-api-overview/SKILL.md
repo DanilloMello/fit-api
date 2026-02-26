@@ -13,14 +13,11 @@ description: Backend skill for fit-api. Java/Spring patterns and conventions.
 
 | Creating | Path |
 |----------|------|
-| Entity | `modules/{m}/domain/entity/{Entity}.java` |
-| Value Object | `modules/{m}/domain/valueobject/{Name}.java` |
-| Repository Port | `modules/{m}/domain/repository/{Entity}Repository.java` |
-| Use Case | `modules/{m}/application/usecase/{Action}{Entity}UseCase.java` |
-| DTO | `modules/{m}/application/dto/{Name}.java` |
-| JPA Entity | `modules/{m}/infrastructure/persistence/{Entity}JpaEntity.java` |
-| Repository Impl | `modules/{m}/infrastructure/persistence/{Entity}RepositoryImpl.java` |
-| Controller | `modules/{m}/presentation/{Entity}Controller.java` |
+| Model (JPA Entity) | `modules/{m}/model/{Entity}.java` |
+| DTO | `modules/{m}/dto/{Name}.java` |
+| Repository | `modules/{m}/repository/{Entity}Repository.java` |
+| Service | `modules/{m}/service/{Entity}Service.java` |
+| Controller | `modules/{m}/controller/{Entity}Controller.java` |
 | Migration | `src/main/resources/db/migration/V{n}__{m}_{action}.sql` |
 
 ---
@@ -37,31 +34,64 @@ description: Backend skill for fit-api. Java/Spring patterns and conventions.
 
 ## 3. Patterns
 
-### Entity
+### Model (JPA Entity)
 ```java
-public class Client extends AggregateRoot<ClientId> {
-    private Client() {}
-    public static Client create(UserId ownerId, String name) {
-        Client c = new Client();
-        c.id = ClientId.generate();
-        c.ownerId = ownerId;
-        c.name = name;
-        c.registerEvent(new ClientCreatedEvent(c.id));
-        return c;
+@Entity
+@Table(name = "clients")
+public class Client {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(nullable = false)
+    private UUID ownerId;
+
+    @Column(nullable = false)
+    private String name;
+
+    protected Client() {}
+
+    public Client(UUID ownerId, String name) {
+        this.ownerId = ownerId;
+        this.name = name;
     }
+
+    // getters and setters
 }
 ```
 
-### Use Case
+### Repository
+```java
+public interface ClientRepository extends JpaRepository<Client, UUID> {
+    List<Client> findByOwnerId(UUID ownerId);
+}
+```
+
+### Service
 ```java
 @Service
 @Transactional
-public class CreateClientUseCase {
-    public ClientResponse execute(CreateClientCommand cmd) {
-        Client c = Client.create(cmd.ownerId(), cmd.name());
-        clientRepository.save(c);
-        eventPublisher.publishAll(c.getDomainEvents());
-        return ClientResponse.from(c);
+public class ClientService {
+
+    private final ClientRepository clientRepository;
+
+    public ClientService(ClientRepository clientRepository) {
+        this.clientRepository = clientRepository;
+    }
+
+    public ClientResponse create(UUID ownerId, CreateClientRequest req) {
+        Client client = new Client(ownerId, req.name());
+        clientRepository.save(client);
+        return ClientResponse.from(client);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientResponse> listByOwner(UUID ownerId) {
+        return clientRepository.findByOwnerId(ownerId)
+                .stream()
+                .map(ClientResponse::from)
+                .toList();
     }
 }
 ```
@@ -71,12 +101,39 @@ public class CreateClientUseCase {
 @RestController
 @RequestMapping("/api/v1/clients")
 public class ClientController {
+
+    private final ClientService clientService;
+
+    public ClientController(ClientService clientService) {
+        this.clientService = clientService;
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<ClientResponse>> create(
-            @Valid @RequestBody ClientCreateRequest req,
+            @Valid @RequestBody CreateClientRequest req,
             @AuthenticationPrincipal UserPrincipal user) {
-        var cmd = new CreateClientCommand(UserId.of(user.getId()), req.name());
-        return ResponseEntity.status(201).body(ApiResponse.success(useCase.execute(cmd)));
+        ClientResponse response = clientService.create(user.getId(), req);
+        return ResponseEntity.status(201).body(ApiResponse.success(response));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ClientResponse>>> list(
+            @AuthenticationPrincipal UserPrincipal user) {
+        List<ClientResponse> clients = clientService.listByOwner(user.getId());
+        return ResponseEntity.ok(ApiResponse.success(clients));
+    }
+}
+```
+
+### DTO
+```java
+public record CreateClientRequest(
+        @NotBlank String name
+) {}
+
+public record ClientResponse(UUID id, UUID ownerId, String name) {
+    public static ClientResponse from(Client client) {
+        return new ClientResponse(client.getId(), client.getOwnerId(), client.getName());
     }
 }
 ```
@@ -85,21 +142,24 @@ public class ClientController {
 
 ## 4. Rules
 
-- `@Transactional` on Use Case only
+- `@Transactional` on Service only — never on Repository or Controller
+- Use `@Transactional(readOnly = true)` for query-only methods
+- Controllers use DTOs — never expose JPA entities directly
+- No business logic in controllers — delegate to Services
+- `ApiResponse<T>` from `com.connecthealth.shared.dto` wraps all responses
 - **Update `API_REGISTRY.md` in fit-common repo when adding endpoints**
 
 ---
 
 ## 5. Checklist: New Entity
 
-- [ ] Entity in `domain/entity/`
-- [ ] Repository port in `domain/repository/`
-- [ ] JPA entity in `infrastructure/persistence/`
-- [ ] Repository impl
-- [ ] Migration file
+- [ ] Model in `model/`
+- [ ] Repository in `repository/` extending `JpaRepository`
+- [ ] Migration file in `db/migration/`
 
 ## 6. Checklist: New Endpoint
 
-- [ ] Use case
+- [ ] Service method with `@Transactional`
 - [ ] Controller method
+- [ ] Request/Response DTOs
 - [ ] **Update `docs/API_REGISTRY.md`**

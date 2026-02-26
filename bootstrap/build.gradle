@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation project(':modules:shared-kernel')
+    implementation project(':modules:shared')
     implementation project(':modules:identity')
     implementation project(':modules:client')
     implementation project(':modules:training')

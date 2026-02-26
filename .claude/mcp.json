@@ -3,6 +3,10 @@
     "fit-api-docs": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "../fit-common/docs"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
     }
   }
 }

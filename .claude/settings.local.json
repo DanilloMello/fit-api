@@ -27,7 +27,12 @@
       "Bash(gh pr view 3 --json state,headRefName,baseRefName,statusCheckRollup)",
       "Bash(gh run list --limit 5)",
       "Bash(git add .)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git checkout -b feature/identity-auth)",
+      "Bash(git stash pop)",
+      "Bash(git checkout stash -- .mcp.json CLAUDE.md QUICKSTART.md bootstrap/src/main/resources/application.yml modules/identity/build.gradle .claude/skills/fit-api-overview/SKILL.md)",
+      "Bash(git stash drop)",
+      "Bash(git add modules/identity/build.gradle bootstrap/src/main/resources/application.yml bootstrap/src/main/resources/db/migration/V1__identity_create_users.sql modules/identity/src/main/java/com/connecthealth/identity/)"
     ]
   },
   "enabledMcpjsonServers": [

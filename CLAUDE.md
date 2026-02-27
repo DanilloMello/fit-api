@@ -65,6 +65,34 @@ fit-api/
 | service | `service/` | Business logic (`@Service`, `@Transactional`) |
 | controller | `controller/` | REST Controllers (`@RestController`) |
 
+## Testing Rules
+
+**Every new class must have a corresponding test. Always maintain 100% coverage.**
+
+### Test types per layer
+
+| Layer | Test type | Tool |
+|-------|-----------|------|
+| model / dto / security utilities | Unit test (`@ExtendWith(MockitoExtension.class)`) | Module test sources |
+| service | Unit test with `@Mock` dependencies | Module test sources |
+| controller | `@WebMvcTest` with `@MockBean` services | Module test sources |
+| full use-case flow | Integration test (`@SpringBootTest` + Testcontainers) | `bootstrap` test sources |
+
+### Checklist when adding a new class
+
+- [ ] Unit test covers all methods and branches (happy path + error paths)
+- [ ] Service test mocks all repository/external dependencies
+- [ ] Controller test covers: success response, validation error (400), and expected error statuses
+- [ ] New endpoint covered by an integration test scenario in `bootstrap/src/test`
+
+### Conventions
+
+- Test class mirrors the production class: `Foo` → `FooTest` in the same package under `src/test/java`
+- Controller tests that need `@AuthenticationPrincipal UserPrincipal` use `.with(user(principal))` from `SecurityMockMvcRequestPostProcessors`
+- `@WebMvcTest` in module tests needs `@MockBean JwtService` and `@MockBean UserDetailsServiceImpl` (security filter deps)
+- Integration tests use `@Testcontainers` + `@Container @ServiceConnection PostgreSQLContainer`
+- Never use `Thread.sleep` in tests — test expired tokens by setting expiration to `-1L` via `ReflectionTestUtils`
+
 ## Rules
 
 - `@Transactional` on Service only, never on Repository or Controller

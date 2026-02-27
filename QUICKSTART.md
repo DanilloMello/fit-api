@@ -51,27 +51,29 @@ docker compose up -d
 
 ## MCP Setup
 
-The `.claude/mcp.json` is already configured. When you open this project in Claude Code, it automatically connects to fit-common docs via MCP servers. No manual setup needed.
+The `.mcp.json` at the project root is already configured. When you open this project in Claude Code, the `context7` MCP server connects automatically — no manual setup needed.
 
 Available MCP servers:
-- `fit-api-docs` — shared docs (DOMAIN_SPEC, API_REGISTRY, etc.)
-- `fit-api-skills` — Java/Spring patterns
-- `fit-api-scripts` — automation scripts
-- `fit-api-hooks` — git hook templates
+- `context7` — live library documentation for dependency version checks
 
 ## Working with Shared Documentation
 
-Shared docs live in the **fit-common** repo. To edit:
+Shared docs live in the **fit-common** GitHub repo. Read them via the GitHub API:
 
 ```bash
-cd ../fit-common
-# Edit files in docs/
+gh api repos/DanilloMello/fit-common/contents/docs/common/API_REGISTRY.md --jq '.content' | base64 -d
+```
+
+To edit shared docs, open the fit-common repo and commit directly:
+
+```bash
+git clone https://github.com/DanilloMello/fit-common.git  # once
+cd fit-common
+# Edit docs/
 git add docs/API_REGISTRY.md
 git commit -m "docs: update API registry"
 git push
 ```
-
-No submodule sync needed — MCP reads directly from fit-common.
 
 ## Daily Workflow
 
@@ -88,10 +90,9 @@ git push                    # Pre-push hook validates automatically
 Fix the errors shown by the hook, then push again.
 
 ### MCP not connecting
-Verify fit-common is cloned as a sibling directory:
+Verify your GitHub CLI is authenticated and can reach fit-common:
 ```bash
-ls ../fit-common/docs/
-# Should list: API_REGISTRY.md, DOMAIN_SPEC.md, etc.
+gh api repos/DanilloMello/fit-common/contents/docs/common --jq '.[].name'
 ```
 
 ### Build fails with Java 21 error
@@ -111,4 +112,4 @@ docker compose up -d
 - Read `CLAUDE.md` for project overview
 - Use `fit-api-docs` MCP to read `DOMAIN_SPEC.md` for the domain model
 - Use `fit-api-docs` MCP to read `API_REGISTRY.md` for API endpoints
-- Read `.claude/skills/fit-api/SKILL.md` for Java/Spring patterns
+- Read `.claude/skills/fit-api-overview/SKILL.md` for Java/Spring patterns

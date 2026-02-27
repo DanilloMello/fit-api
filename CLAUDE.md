@@ -5,11 +5,16 @@
 ## Context
 
 This is the **backend API** for ConnectHealth platform.
-Shared documentation lives in the **fit-common** sibling repo and is accessed via MCP servers.
+Shared documentation lives in the **fit-common** GitHub repo: `DanilloMello/fit-common`.
 
-## Common Docs (via MCP)
+## Common Docs (via GitHub)
 
-**If you need any of these docs, use the `fit-api-docs` MCP server:**
+**IMPORTANT: Before starting any task, fetch the relevant docs from GitHub to get context and policies.**
+
+### Common docs (all platforms)
+```bash
+gh api repos/DanilloMello/fit-common/contents/docs/common/<FILE> --jq '.content' | base64 -d
+```
 - `DOMAIN_SPEC.md` - Entities, enums, business rules
 - `API_REGISTRY.md` - API endpoints to implement
 - `CODING_GUIDELINES.md` - Coding standards
@@ -17,20 +22,23 @@ Shared documentation lives in the **fit-common** sibling repo and is accessed vi
 - `SPRINT_PLAN.md` - Development roadmap
 - `VALIDATION_SETUP.md` - Pre-push hooks and CI/CD
 
+### Server-specific docs
+```bash
+gh api repos/DanilloMello/fit-common/contents/docs/server/<FILE> --jq '.content' | base64 -d
+```
+- `CODING_GUIDELINES.md` - Server coding standards
+- `VALIDATION_SETUP.md` - Server validation setup
+
+To list available docs:
+```bash
+gh api repos/DanilloMello/fit-common/contents/docs/common --jq '.[].name'
+gh api repos/DanilloMello/fit-common/contents/docs/server --jq '.[].name'
+```
+
 ## Skills
 
 **If you need patterns and conventions:**
 - `.claude/skills/fit-api-overview/SKILL.md` - Java/Spring patterns & conventions
-
-## Scripts (via MCP)
-
-**If you need automation scripts, use the `fit-api-scripts` MCP server:**
-- `install-hooks.sh` - Install pre-push validation hook
-
-## Hooks (via MCP)
-
-**If you need to review or update git hooks, use the `fit-api-hooks` MCP server:**
-- `pre-push.sh` - Code quality validation before push
 
 ## Architecture
 
@@ -76,15 +84,3 @@ fit-api/
 docker compose up -d                 # Start PostgreSQL
 docker compose down                  # Stop PostgreSQL
 ```
-
-## fit-common Structure Sync Rule
-
-> **IMPORTANT**: When implementing code, check the fit-common repo structure.
-> If new docs, scripts, or hooks were added/removed in fit-common, update the
-> lists above to reflect the current structure. This CLAUDE.md must always
-> mirror what's available in fit-common.
->
-> Current fit-common structure this file tracks:
-> - docs/: DOMAIN_SPEC, API_REGISTRY, CODING_GUIDELINES, PRD, SPRINT_PLAN, VALIDATION_SETUP
-> - scripts/: install-hooks.sh
-> - templates/hooks/: pre-push.sh

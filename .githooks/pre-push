@@ -1,0 +1,132 @@
+#!/bin/bash
+# fit-api pre-push validation hook
+#
+# Mirrors the CI pipeline for fast local feedback before pushing.
+# Integration tests (bootstrap / Testcontainers) are intentionally
+# skipped here — they require Docker and run in CI on every PR.
+#
+# To bypass in an emergency (strongly discouraged):
+#   git push --no-verify
+
+set -euo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+pass() { echo -e "${GREEN}  ✓ $1${NC}"; }
+fail() { echo -e "${RED}  ✗ $1${NC}"; }
+warn() { echo -e "${YELLOW}  ⚠ $1${NC}"; }
+header() { echo -e "\n${BOLD}$1${NC}"; }
+
+echo ""
+echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BOLD}  fit-api pre-push validation${NC}"
+echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+# ─────────────────────────────────────────────────────
+# 1. Dirty working tree
+# ─────────────────────────────────────────────────────
+header "1/5  Working tree"
+if ! git diff --quiet || ! git diff --cached --quiet; then
+    fail "Uncommitted changes detected. Commit or stash before pushing."
+    exit 1
+fi
+pass "Working tree clean"
+
+# ─────────────────────────────────────────────────────
+# 2. Compile / build (no tests)
+# ─────────────────────────────────────────────────────
+header "2/5  Build"
+if ! ./gradlew build -x test --quiet --no-daemon 2>&1; then
+    fail "Build failed. Fix compilation errors before pushing."
+    exit 1
+fi
+pass "Build successful"
+
+# ─────────────────────────────────────────────────────
+# 3. Unit and controller tests
+#    (skips :bootstrap:test — requires Docker / Testcontainers)
+# ─────────────────────────────────────────────────────
+header "3/5  Tests (unit + controller)"
+if ! ./gradlew :modules:shared:test :modules:identity:test --quiet --no-daemon 2>&1; then
+    fail "Tests failed. All tests must pass before pushing."
+    exit 1
+fi
+pass "All tests passed"
+
+# ─────────────────────────────────────────────────────
+# 4. Code quality checks (same rules as CI)
+# ─────────────────────────────────────────────────────
+header "4/5  Code quality"
+VIOLATIONS=0
+
+# No System.out.println in production code
+if grep -rn "System\.out\.println" \
+       modules/*/src/main bootstrap/src/main \
+       --include="*.java" 2>/dev/null; then
+    fail "System.out.println found in production code — use SLF4J logger"
+    VIOLATIONS=$((VIOLATIONS + 1))
+else
+    pass "No System.out.println"
+fi
+
+# No @Transactional on repositories
+if grep -rn "@Transactional" \
+       modules/*/src/main/java/com/connecthealth/*/repository \
+       --include="*.java" 2>/dev/null; then
+    fail "@Transactional found on a repository — belongs on Service only"
+    VIOLATIONS=$((VIOLATIONS + 1))
+else
+    pass "No @Transactional on repositories"
+fi
+
+# No large commented-out blocks (5+ consecutive comment lines)
+if grep -rn "^\s*//" modules/*/src/main bootstrap/src/main \
+       --include="*.java" 2>/dev/null | \
+       awk -F: '{file=$1; line=$2+0} prev_file==file && line==prev_line+1 {count++; if(count>=4) print file " has a large commented-out block"} {prev_file=file; prev_line=line; count=1}' | \
+       sort -u | head -5 | grep .; then
+    warn "Large commented-out code blocks detected (consider removing)"
+    # warn only — does not block push
+fi
+
+if [ $VIOLATIONS -gt 0 ]; then
+    echo ""
+    fail "Code quality check failed ($VIOLATIONS violation(s)). Fix before pushing."
+    exit 1
+fi
+
+# ─────────────────────────────────────────────────────
+# 5. API Registry reminder
+# ─────────────────────────────────────────────────────
+header "5/5  API Registry"
+CURRENT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+BASE_REF=$(git merge-base HEAD origin/develop 2>/dev/null || git merge-base HEAD origin/master 2>/dev/null || echo "")
+
+if [ -n "$BASE_REF" ]; then
+    MODIFIED_CONTROLLERS=$(git diff --name-only "$BASE_REF"...HEAD -- \
+        'modules/*/src/main/java/**/*Controller.java' \
+        ':!modules/*/src/test/**' 2>/dev/null || \
+        git diff --name-only "$BASE_REF" HEAD -- \
+        'modules/*/src/main/java/**/*Controller.java' 2>/dev/null || true)
+
+    if echo "$MODIFIED_CONTROLLERS" | grep -q "Controller"; then
+        warn "Controller files changed — verify API_REGISTRY.md is up to date in fit-common"
+        echo "      Modified: $MODIFIED_CONTROLLERS"
+    else
+        pass "No controller changes detected"
+    fi
+else
+    pass "Skipping API Registry check (no base ref found)"
+fi
+
+# ─────────────────────────────────────────────────────
+# Done
+# ─────────────────────────────────────────────────────
+echo ""
+echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}${BOLD}  ✅ All checks passed — pushing...${NC}"
+echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""

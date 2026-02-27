@@ -1,6 +1,5 @@
 package com.connecthealth.bootstrap;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,18 +53,20 @@ class AuthIntegrationTest {
                 .andReturn();
 
         String registerBody = registerResult.getResponse().getContentAsString();
-        JsonNode registerJson = objectMapper.readTree(registerBody);
-        String accessToken = registerJson.at("/data/tokens/accessToken").asText();
-        String refreshToken = registerJson.at("/data/tokens/refreshToken").asText();
+        String accessToken = objectMapper.readTree(registerBody).at("/data/tokens/accessToken").asText();
 
-        // Login
-        mockMvc.perform(post("/api/v1/auth/login")
+        // Login — captures the latest refresh token (login rotates it)
+        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"email":"integration@example.com","password":"password123"}
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.tokens.accessToken").isNotEmpty());
+                .andExpect(jsonPath("$.data.tokens.accessToken").isNotEmpty())
+                .andReturn();
+
+        String refreshToken = objectMapper.readTree(loginResult.getResponse().getContentAsString())
+                .at("/data/tokens/refreshToken").asText();
 
         // Refresh
         MvcResult refreshResult = mockMvc.perform(post("/api/v1/auth/refresh")
